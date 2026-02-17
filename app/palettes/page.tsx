@@ -1,63 +1,32 @@
 'use client'
 
-import { Suspense, useEffect, useMemo, useState } from 'react'
-import { useQueryState, parseAsString, parseAsStringEnum } from 'nuqs'
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react'
+import Link from 'next/link'
+import { authClient } from '@/lib/auth/client'
+import { PaletteDisplay } from '@/components/palette-display'
+import { PaletteSkeleton } from '@/components/palette-skeleton'
+import { Navigation } from '@/components/navigation'
 import { BrutalButton } from '@/components/ui/brutal-button'
 import { BrutalInput } from '@/components/ui/brutal-input'
 import { BrutalCard, BrutalCardContent, BrutalCardHeader, BrutalCardTitle } from '@/components/ui/brutal-card'
-import { PaletteDisplay } from '@/components/palette-display'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Search, Heart, Sparkles, Delete02Icon, Cancel01Icon } from '@hugeicons/core-free-icons'
-import Link from 'next/link'
-import type { Palette } from '@/lib/types/color'
-import { Navigation } from '@/components/navigation'
+import { Sparkles, Heart, Delete02Icon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
+import type { Palette } from '@/lib/types/color'
 
 function PalettesPageContent() {
   const [palettes, setPalettes] = useState<Palette[]>([])
-  const [searchQuery, setSearchQuery] = useQueryState(
-    'q',
-    parseAsString.withDefault('')
-  )
-  const [filterMode, setFilterMode] = useQueryState(
-    'filter',
-    parseAsStringEnum(['all', 'favorites']).withDefault('all')
-  )
   const [isLoading, setIsLoading] = useState(true)
-  const [pendingFavoriteIds, setPendingFavoriteIds] = useState<Set<number>>(new Set())
-  const [deleteTarget, setDeleteTarget] = useState<Palette | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterMode, setFilterMode] = useState<'all' | 'favorites'>('all')
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  useEffect(() => {
-    fetchPalettes()
-  }, [])
-
-  useEffect(() => {
-    if (!deleteTarget) {
-      return
-    }
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !isDeleting) {
-        setDeleteTarget(null)
-      }
-    }
-
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
-  }, [deleteTarget, isDeleting])
-
-  const fetchPalettes = async () => {
+  const fetchPalettes = useCallback(async () => {
     try {
       const response = await fetch('/api/palettes')
-
-      if (response.status === 401) {
-        window.location.href = '/auth/sign-in'
-        return
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch palettes')
       const data = await response.json()
-      
       if (Array.isArray(data)) {
         setPalettes(data)
       } else {
@@ -66,118 +35,75 @@ function PalettesPageContent() {
       }
     } catch (error) {
       console.error('[v0] Error fetching palettes:', error)
+      toast.error('Failed to load palettes')
       setPalettes([])
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchPalettes()
+  }, [fetchPalettes])
 
   const filteredPalettes = useMemo(() => {
-    if (!Array.isArray(palettes)) {
-      return []
+    let filtered = palettes
+
+    if (filterMode === 'favorites') {
+      filtered = filtered.filter((p) => p.isFavorite)
     }
 
-    const normalizedQuery = searchQuery.trim().toLowerCase()
-
-    return palettes.filter((palette) => {
-      if (filterMode === 'favorites' && !palette.isFavorite) {
-        return false
-      }
-
-      if (!normalizedQuery) {
-        return true
-      }
-
-      const matchesName = palette.name.toLowerCase().includes(normalizedQuery)
-      const matchesTag = palette.tags?.some((tag) => tag.toLowerCase().includes(normalizedQuery))
-      return matchesName || Boolean(matchesTag)
-    })
-  }, [palettes, searchQuery, filterMode])
-
-  const favoriteCount = useMemo(
-    () => palettes.filter((palette) => palette.isFavorite).length,
-    [palettes]
-  )
-
-  const handleToggleFavorite = async (id: number) => {
-    if (pendingFavoriteIds.has(id)) {
-      return
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.colors.some((c) => c.toLowerCase().includes(query)) ||
+          (p.harmonyType && p.harmonyType.toLowerCase().includes(query))
+      )
     }
 
-    const palette = palettes.find((p) => p.id === id)
-    if (!palette) return
+    return filtered
+  }, [palettes, filterMode, searchQuery])
 
-    const nextIsFavorite = !palette.isFavorite
+  const favoriteCount = useMemo(() => palettes.filter((p) => p.isFavorite).length, [palettes])
 
-    setPendingFavoriteIds((prev) => {
-      const next = new Set(prev)
-      next.add(id)
-      return next
-    })
-
-    setPalettes((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, isFavorite: nextIsFavorite } : p))
-    )
-
+  const handleToggleFavorite = async (paletteId: number) => {
     try {
-      const response = await fetch(`/api/palettes/${id}`, {
+      const response = await fetch(`/api/palettes/${paletteId}/favorite`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isFavorite: nextIsFavorite }),
       })
 
-      if (!response.ok) {
-        setPalettes((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, isFavorite: palette.isFavorite } : p))
-        )
-        toast.error('Could not update favorite right now.')
+      if (response.ok) {
+        setPalettes((prev) => prev.map((p) => (p.id === paletteId ? { ...p, isFavorite: !p.isFavorite } : p)))
       } else {
-        toast.success(nextIsFavorite ? 'Added to favorites.' : 'Removed from favorites.')
+        toast.error('Failed to update favorite status')
       }
     } catch (error) {
       console.error('[v0] Error toggling favorite:', error)
-      setPalettes((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, isFavorite: palette.isFavorite } : p))
-      )
-      toast.error('Could not update favorite right now.')
-    } finally {
-      setPendingFavoriteIds((prev) => {
-        const next = new Set(prev)
-        next.delete(id)
-        return next
-      })
+      toast.error('Failed to update favorite status')
     }
   }
 
-  const handleDelete = (id: number) => {
-    const palette = palettes.find((p) => p.id === id)
-    if (!palette) return
-    setDeleteTarget(palette)
-  }
+  const handleDelete = async () => {
+    if (!deleteTarget) return
 
-  const confirmDelete = async () => {
-    if (!deleteTarget?.id || isDeleting) {
-      return
-    }
-
-    const id = deleteTarget.id
     setIsDeleting(true)
-
     try {
-      const response = await fetch(`/api/palettes/${id}`, {
+      const response = await fetch(`/api/palettes/${deleteTarget}`, {
         method: 'DELETE',
       })
 
       if (response.ok) {
-        setPalettes((prev) => prev.filter((p) => p.id !== id))
-        toast.success('Palette deleted.')
+        setPalettes((prev) => prev.filter((p) => p.id !== deleteTarget))
+        toast.success('Palette deleted successfully')
         setDeleteTarget(null)
       } else {
-        toast.error('Could not delete palette right now.')
+        toast.error('Failed to delete palette')
       }
     } catch (error) {
       console.error('[v0] Error deleting palette:', error)
-      toast.error('Could not delete palette right now.')
+      toast.error('Failed to delete palette')
     } finally {
       setIsDeleting(false)
     }
@@ -191,61 +117,56 @@ function PalettesPageContent() {
         <main>
         <header className="mb-8">
           <div className="bg-secondary text-white border-3 border-black shadow-brutal-xl p-4 sm:p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <HugeiconsIcon icon={Sparkles} className="h-8 w-8" aria-hidden="true" />
-              <h1 className="text-2xl font-bold text-balance sm:text-4xl">My Palettes</h1>
-            </div>
-            <p className="text-base font-medium sm:text-lg">
-              Manage your saved color palettes
-            </p>
+            <h1 className="text-4xl font-black tracking-tight text-balance sm:text-5xl">My Palettes</h1>
+            <p className="mt-2 text-lg font-bold opacity-90">View and manage your saved color palettes</p>
           </div>
         </header>
 
-        <div className="mb-6">
-          <BrutalCard>
-            <BrutalCardContent className="p-4">
-              <div className="flex flex-col gap-4 md:flex-row">
-                <div className="flex-1">
-                  <label htmlFor="palette-search" className="sr-only">Search palettes</label>
-                  <div className="relative">
-                    <HugeiconsIcon icon={Search} className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" aria-hidden="true" />
-                    <BrutalInput
-                      id="palette-search"
-                      type="text"
-                      name="palette-search"
-                      autoComplete="off"
-                      placeholder="Search palettes by name or tags…"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
+        {/* Search and Filter */}
+        <div className="mb-8 space-y-4 border-3 border-black bg-white p-4 shadow-brutal sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Search */}
+            <div className="flex-1">
+              <BrutalInput
+                type="search"
+                placeholder="Search palettes by name, color, or harmony type..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
 
-                <div className="hidden md:flex md:flex-wrap md:gap-2" role="group" aria-label="Filter palettes">
-                  <BrutalButton
-                    variant={filterMode === 'all' ? 'primary' : 'outline'}
-                    onClick={() => setFilterMode('all')}
-                    className="w-full justify-center text-sm sm:w-auto"
-                    aria-pressed={filterMode === 'all'}
-                  >
-                    All ({palettes.length})
-                  </BrutalButton>
-                  <BrutalButton
-                    variant={filterMode === 'favorites' ? 'secondary' : 'outline'}
-                    onClick={() => setFilterMode('favorites')}
-                    className="w-full justify-center text-sm sm:w-auto"
-                    aria-pressed={filterMode === 'favorites'}
-                  >
-                    <HugeiconsIcon icon={Heart} className={`h-4 w-4 mr-2 ${filterMode === 'favorites' ? 'fill-current' : ''}`} aria-hidden="true" />
-                    Favorites ({favoriteCount})
-                  </BrutalButton>
-                </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {/* Palette Count */}
+              <div className="text-sm font-bold">
+                <span className="text-muted-foreground">Showing:</span> {filteredPalettes.length} of {palettes.length}
               </div>
-            </BrutalCardContent>
-          </BrutalCard>
+
+              {/* Filters - Desktop */}
+              <div className="hidden md:flex md:flex-wrap md:gap-2" role="group" aria-label="Filter palettes">
+                <BrutalButton
+                  variant={filterMode === 'all' ? 'primary' : 'outline'}
+                  onClick={() => setFilterMode('all')}
+                  className="w-full justify-center text-sm sm:w-auto"
+                  aria-pressed={filterMode === 'all'}
+                >
+                  All ({palettes.length})
+                </BrutalButton>
+                <BrutalButton
+                  variant={filterMode === 'favorites' ? 'secondary' : 'outline'}
+                  onClick={() => setFilterMode('favorites')}
+                  className="w-full justify-center text-sm sm:w-auto"
+                  aria-pressed={filterMode === 'favorites'}
+                >
+                  <HugeiconsIcon icon={Heart} className={`h-4 w-4 mr-2 ${filterMode === 'favorites' ? 'fill-current' : ''}`} aria-hidden="true" />
+                  Favorites ({favoriteCount})
+                </BrutalButton>
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* Mobile Filter Buttons - Sticky Bottom */}
         <div className="sticky bottom-2 z-30 mt-4 border-3 border-black bg-background/95 p-2 shadow-brutal-sm backdrop-blur-sm md:hidden">
           <div className="grid grid-cols-2 gap-2" role="group" aria-label="Filter palettes">
             <BrutalButton
@@ -268,11 +189,14 @@ function PalettesPageContent() {
           </div>
         </div>
 
+        {/* Palettes Grid */}
         <section aria-label="Saved palettes">
         {isLoading ? (
-          <div className="text-center py-12" role="status" aria-live="polite">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" aria-hidden="true"></div>
-            <p className="mt-4 text-lg font-bold">Loading palettes…</p>
+          <div className="grid gap-6" role="status" aria-live="polite">
+            <span className="sr-only">Loading palettes…</span>
+            {[...Array(3)].map((_, i) => (
+              <PaletteSkeleton key={i} />
+            ))}
           </div>
         ) : filteredPalettes.length > 0 ? (
           <div className="grid gap-6">
@@ -281,8 +205,7 @@ function PalettesPageContent() {
                 key={palette.id}
                 palette={palette}
                 onToggleFavorite={handleToggleFavorite}
-                onDelete={handleDelete}
-                isFavoritePending={palette.id ? pendingFavoriteIds.has(palette.id) : false}
+                onDelete={(id) => setDeleteTarget(id)}
               />
             ))}
           </div>
@@ -315,50 +238,43 @@ function PalettesPageContent() {
         )}
         </section>
 
-      {deleteTarget ? (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] overscroll-contain sm:items-center sm:p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-palette-title"
-          aria-describedby="delete-palette-description"
-          onClick={() => {
-            if (!isDeleting) {
-              setDeleteTarget(null)
-            }
-          }}
-        >
-          <BrutalCard className="max-h-[88svh] w-full overflow-auto border-4 border-black shadow-brutal-xl sm:max-w-md" onClick={(e) => e.stopPropagation()}>
-            <BrutalCardHeader>
-              <BrutalCardTitle id="delete-palette-title" className="flex items-center gap-2 text-xl">
-                <HugeiconsIcon icon={Delete02Icon} className="h-5 w-5" aria-hidden="true" />
-                Delete Palette?
-              </BrutalCardTitle>
-            </BrutalCardHeader>
-            <BrutalCardContent className="space-y-5">
-              <div id="delete-palette-description" className="border-3 border-black bg-accent p-3 font-bold">
-                This will permanently delete <span className="underline">{deleteTarget.name}</span>.
-              </div>
-              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
-                <BrutalButton
-                  variant="outline"
-                  onClick={() => setDeleteTarget(null)}
-                  disabled={isDeleting}
-                  className="w-full sm:w-auto"
-                >
-                  <HugeiconsIcon icon={Cancel01Icon} className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Cancel
-                </BrutalButton>
-                <BrutalButton variant="destructive" onClick={confirmDelete} disabled={isDeleting} className="w-full sm:w-auto">
-                  <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" aria-hidden="true" />
-                  {isDeleting ? 'Deleting…' : 'Delete'}
-                </BrutalButton>
-              </div>
-            </BrutalCardContent>
-          </BrutalCard>
-        </div>
-      ) : null}
-      </main>
+        {deleteTarget ? (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] overscroll-contain sm:items-center sm:p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-palette-title"
+            aria-describedby="delete-palette-description"
+            onClick={() => {
+              if (!isDeleting) {
+                setDeleteTarget(null)
+              }
+            }}
+          >
+            <BrutalCard className="max-h-[88svh] w-full overflow-auto border-4 border-black shadow-brutal-xl sm:max-w-md" onClick={(e) => e.stopPropagation()}>
+              <BrutalCardHeader>
+                <BrutalCardTitle id="delete-palette-title" className="flex items-center gap-2 text-xl">
+                  <HugeiconsIcon icon={Delete02Icon} className="h-5 w-5" aria-hidden="true" />
+                  Delete Palette?
+                </BrutalCardTitle>
+              </BrutalCardHeader>
+              <BrutalCardContent>
+                <p id="delete-palette-description" className="mb-6 text-sm text-muted-foreground">
+                  This action cannot be undone. This palette will be permanently deleted.
+                </p>
+                <div className="flex gap-3">
+                  <BrutalButton variant="outline" onClick={() => setDeleteTarget(null)} disabled={isDeleting} className="flex-1">
+                    Cancel
+                  </BrutalButton>
+                  <BrutalButton variant="primary" onClick={handleDelete} disabled={isDeleting} className="flex-1">
+                    {isDeleting ? 'Deleting…' : 'Delete'}
+                  </BrutalButton>
+                </div>
+              </BrutalCardContent>
+            </BrutalCard>
+          </div>
+        ) : null}
+        </main>
       </div>
     </div>
   )
