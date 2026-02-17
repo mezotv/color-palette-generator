@@ -27,13 +27,34 @@ function mapPaletteRow(row: any): Palette {
 type PaletteInsert = Omit<Palette, 'id' | 'createdAt' | 'updatedAt' | 'userId'>
 
 export async function createPalette(userId: string, palette: PaletteInsert) {
+  console.log('[v0] createPalette called with:', { userId, palette })
   const sql = getDb()
-  const result = await sql`
-    INSERT INTO palettes (user_id, name, colors, harmony_type, is_favorite, tags)
-    VALUES (${userId}, ${palette.name}, ${JSON.stringify(palette.colors)}, ${palette.harmonyType}, ${palette.isFavorite}, ${palette.tags ?? []})
-    RETURNING *
-  `
-  return mapPaletteRow(result[0])
+  console.log('[v0] Database connection obtained')
+  
+  try {
+    console.log('[v0] Inserting palette with values:', {
+      userId,
+      name: palette.name,
+      colors: palette.colors,
+      harmonyType: palette.harmonyType,
+      isFavorite: palette.isFavorite,
+      tags: palette.tags ?? []
+    })
+    
+    const result = await sql`
+      INSERT INTO palettes (user_id, name, colors, harmony_type, is_favorite, tags)
+      VALUES (${userId}, ${palette.name}, ${JSON.stringify(palette.colors)}, ${palette.harmonyType}, ${palette.isFavorite}, ${palette.tags ?? []})
+      RETURNING *
+    `
+    console.log('[v0] Insert successful, raw result:', result[0])
+    const mapped = mapPaletteRow(result[0])
+    console.log('[v0] Mapped result:', mapped)
+    return mapped
+  } catch (error) {
+    console.error('[v0] Database error in createPalette:', error)
+    console.error('[v0] Error details:', error instanceof Error ? error.message : 'Unknown error')
+    throw error
+  }
 }
 
 export async function getAllPalettes(userId: string) {

@@ -58,7 +58,6 @@ function PalettesPageContent() {
 
       const data = await response.json()
       
-      // Ensure data is an array
       if (Array.isArray(data)) {
         setPalettes(data)
       } else {
@@ -184,15 +183,12 @@ function PalettesPageContent() {
     }
   }
 
-
-
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <Navigation />
 
         <main>
-        {/* Header */}
         <header className="mb-8">
           <div className="bg-secondary text-white border-3 border-black shadow-brutal-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-2">
@@ -205,12 +201,10 @@ function PalettesPageContent() {
           </div>
         </header>
 
-        {/* Controls */}
         <div className="mb-6">
           <BrutalCard>
             <BrutalCardContent className="p-4">
               <div className="flex flex-col gap-4 md:flex-row">
-                {/* Search */}
                 <div className="flex-1">
                   <label htmlFor="palette-search" className="sr-only">Search palettes</label>
                   <div className="relative">
@@ -228,7 +222,6 @@ function PalettesPageContent() {
                   </div>
                 </div>
 
-                {/* Filter Buttons */}
                 <div className="hidden md:flex md:flex-wrap md:gap-2" role="group" aria-label="Filter palettes">
                   <BrutalButton
                     variant={filterMode === 'all' ? 'primary' : 'outline'}
@@ -275,7 +268,6 @@ function PalettesPageContent() {
           </div>
         </div>
 
-        {/* Palettes Grid */}
         <section aria-label="Saved palettes">
         {isLoading ? (
           <div className="text-center py-12" role="status" aria-live="polite">
@@ -367,7 +359,7 @@ function PalettesPageContent() {
         </div>
       ) : null}
       </main>
-    </div>
+      </div>
     </div>
   )
 }
