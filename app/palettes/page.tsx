@@ -368,7 +368,6 @@ function PalettesPageContent() {
       ) : null}
       </main>
     </div>
-    </div>
   )
 }
 

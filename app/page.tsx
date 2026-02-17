@@ -56,33 +56,52 @@ function HomeContent() {
   }
 
   const handleSavePalette = async () => {
-    if (!generatedColors.length || !paletteName.trim()) return
+    console.log('[v0] Save palette initiated')
+    console.log('[v0] Generated colors:', generatedColors)
+    console.log('[v0] Palette name:', paletteName)
+    console.log('[v0] Is authenticated:', isAuthenticated)
+    
+    if (!generatedColors.length || !paletteName.trim()) {
+      console.log('[v0] Validation failed: missing colors or name')
+      return
+    }
 
     if (!isAuthenticated) {
+      console.log('[v0] Not authenticated, showing error')
       toast.error('Please sign in to save palettes.')
       return
     }
 
     setIsSaving(true)
     try {
+      const payload = {
+        name: paletteName,
+        colors: generatedColors,
+        harmonyType,
+        isFavorite: false,
+        tags: [],
+      }
+      console.log('[v0] Sending payload to API:', payload)
+      
       const response = await fetch('/api/palettes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: paletteName,
-          colors: generatedColors,
-          harmonyType,
-          isFavorite: false,
-          tags: [],
-        }),
+        body: JSON.stringify(payload),
       })
 
+      console.log('[v0] API response status:', response.status)
+      
       if (response.ok) {
+        const data = await response.json()
+        console.log('[v0] Palette saved successfully:', data)
         setPaletteName('')
         toast.success('Palette saved successfully!')
       } else if (response.status === 401) {
+        console.log('[v0] Authentication error')
         toast.error('Your session expired. Please sign in again.')
       } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('[v0] Failed to save palette. Status:', response.status, 'Error:', errorData)
         toast.error('Failed to save palette')
       }
     } catch (error) {
