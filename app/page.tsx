@@ -10,7 +10,7 @@ import { ColorSwatch } from '@/components/color-swatch'
 import { Navigation } from '@/components/navigation'
 import { generateColorHarmony, generateRandomPalette } from '@/lib/utils/color-harmony'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Palette, Refresh, Sparkles, Copy, Link, InformationCircleIcon } from '@hugeicons/core-free-icons'
+import { Palette, Refresh, Sparkles, Copy, Link as LinkIcon, InformationCircleIcon } from '@hugeicons/core-free-icons'
 import type { HarmonyType } from '@/lib/types/color'
 import { authClient } from '@/lib/auth/client'
 import { toast } from 'sonner'
@@ -270,7 +270,7 @@ function HomeContent() {
                           toast.success('Link copied to clipboard!')
                         }}
                       >
-                        <HugeiconsIcon icon={Link} className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                        <HugeiconsIcon icon={LinkIcon} className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                         <span className="hidden sm:inline">Share</span>
                       </BrutalButton>
                       <BrutalButton
