@@ -79,20 +79,22 @@ export const AuthUserControls = memo(function AuthUserControls() {
 
   if (!user) {
     return (
-      <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:gap-3">
-        <Link href="/auth/sign-in">
-          <BrutalButton variant="outline" className="w-full sm:w-auto">
-            <HugeiconsIcon icon={Login} className="mr-2 h-4 w-4"   aria-hidden="true" />
-            Sign In
-          </BrutalButton>
-        </Link>
-        <Link href="/auth/sign-up">
-          <BrutalButton variant="accent" className="w-full sm:w-auto">
-            <HugeiconsIcon icon={UserAddIcon} className="mr-2 h-4 w-4"   aria-hidden="true" />
-            Sign Up
-          </BrutalButton>
-        </Link>
-      </div>
+      <>
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:gap-3">
+          <Link href="/auth/sign-in">
+            <BrutalButton variant="outline" className="w-full sm:w-auto">
+              <HugeiconsIcon icon={Login} className="mr-2 h-4 w-4" aria-hidden="true" />
+              Sign In
+            </BrutalButton>
+          </Link>
+          <Link href="/auth/sign-up">
+            <BrutalButton variant="accent" className="w-full sm:w-auto">
+              <HugeiconsIcon icon={UserAddIcon} className="mr-2 h-4 w-4" aria-hidden="true" />
+              Sign Up
+            </BrutalButton>
+          </Link>
+        </div>
+      </>
     )
   }
 
