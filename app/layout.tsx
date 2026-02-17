@@ -20,8 +20,48 @@ const spaceMono = Space_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Color Palette Generator',
-  description: 'Generate beautiful color palettes with color theory',
+  title: {
+    default: 'Color Palette Generator - Create Beautiful Color Schemes',
+    template: '%s | Color Palette Generator'
+  },
+  description: 'Generate beautiful, accessible color palettes with color theory. Create complementary, analogous, triadic, and more color harmonies. Save and organize your favorite palettes.',
+  keywords: ['color palette', 'color scheme', 'color generator', 'color harmony', 'complementary colors', 'analogous colors', 'triadic colors', 'color theory', 'design tools', 'color picker'],
+  authors: [{ name: 'Your Name' }],
+  creator: 'Your Name',
+  publisher: 'Your Name',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Color Palette Generator - Create Beautiful Color Schemes',
+    description: 'Generate beautiful, accessible color palettes with color theory. Create complementary, analogous, triadic, and more color harmonies.',
+    url: '/',
+    siteName: 'Color Palette Generator',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Color Palette Generator - Create Beautiful Color Schemes',
+    description: 'Generate beautiful, accessible color palettes with color theory. Create complementary, analogous, triadic, and more color harmonies.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   generator: 'v0.app',
 }
 
@@ -30,8 +70,35 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Color Palette Generator',
+    description: 'Generate beautiful, accessible color palettes with color theory',
+    applicationCategory: 'DesignApplication',
+    operatingSystem: 'Any',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    featureList: [
+      'Generate color palettes using color theory',
+      'Multiple harmony types (complementary, analogous, triadic, etc.)',
+      'Save and organize favorite palettes',
+      'Keyboard shortcuts for quick generation',
+      'Accessible and responsive design',
+    ],
+  }
+
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${spaceMono.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="font-sans antialiased">
         <a
           href="#main-content"
