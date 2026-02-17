@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { ChevronDown, Login, Logout, UserAddIcon } from '@hugeicons/core-free-icons'
@@ -13,7 +13,7 @@ type SessionUser = {
   name?: string | null
 }
 
-export const AuthUserControls = memo(function AuthUserControls() {
+export function AuthUserControls() {
   const [user, setUser] = useState<SessionUser | null>(null)
   const [isReady, setIsReady] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
@@ -139,4 +139,4 @@ export const AuthUserControls = memo(function AuthUserControls() {
       </div>
     </>
   )
-})
+}
