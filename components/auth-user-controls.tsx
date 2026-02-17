@@ -47,52 +47,52 @@ export function AuthUserControls() {
     }
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false)
       }
     }
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsMenuOpen(false)
-      }
-    }
-
-    window.addEventListener('mousedown', handleClickOutside)
-    window.addEventListener('keydown', handleEscape)
+    document.addEventListener('mousedown', handleClickOutside)
 
     return () => {
-      window.removeEventListener('mousedown', handleClickOutside)
-      window.removeEventListener('keydown', handleEscape)
+      document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isMenuOpen])
 
   const handleSignOut = async () => {
     setIsSigningOut(true)
     await authClient.signOut()
-    window.location.href = '/'
+    setUser(null)
+    setIsSigningOut(false)
+    setIsMenuOpen(false)
   }
 
   if (!isReady) {
-    return null
+    return (
+      <>
+        <div className="h-10 w-32 animate-pulse rounded border-3 border-black bg-gray-200"></div>
+      </>
+    )
   }
 
   if (!user) {
     return (
-      <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:gap-3">
-        <Link href="/auth/sign-in">
-          <BrutalButton variant="outline" className="w-full sm:w-auto">
-            <HugeiconsIcon icon={Login} className="mr-2 h-4 w-4"   aria-hidden="true" />
-            Sign In
-          </BrutalButton>
-        </Link>
-        <Link href="/auth/sign-up">
-          <BrutalButton variant="accent" className="w-full sm:w-auto">
-            <HugeiconsIcon icon={UserAddIcon} className="mr-2 h-4 w-4"   aria-hidden="true" />
-            Sign Up
-          </BrutalButton>
-        </Link>
-      </div>
+      <>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Link href="/auth/sign-in">
+            <BrutalButton variant="outline" className="w-full sm:w-auto">
+              <HugeiconsIcon icon={Login} className="mr-2 h-4 w-4" aria-hidden="true" />
+              Sign In
+            </BrutalButton>
+          </Link>
+          <Link href="/auth/sign-up">
+            <BrutalButton variant="accent" className="w-full sm:w-auto">
+              <HugeiconsIcon icon={UserAddIcon} className="mr-2 h-4 w-4" aria-hidden="true" />
+              Sign Up
+            </BrutalButton>
+          </Link>
+        </div>
+      </>
     )
   }
 

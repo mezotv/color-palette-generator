@@ -35,13 +35,13 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:border-2 focus:border-black focus:bg-white focus:px-3 focus:py-2 focus:font-bold"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:border-3 focus:border-black focus:bg-accent focus:text-accent-foreground focus:px-4 focus:py-3 focus:font-bold focus:shadow-brutal"
         >
           Skip to main content
         </a>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme="light">
           <NuqsAdapter>
-            <div id="main-content">{children}</div>
+            <div id="main-content" tabIndex={-1}>{children}</div>
             <SiteFooter />
           </NuqsAdapter>
           <div aria-live="polite" aria-atomic="true">
