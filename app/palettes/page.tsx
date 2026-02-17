@@ -191,6 +191,7 @@ function PalettesPageContent() {
       <div className="max-w-7xl mx-auto">
         <Navigation />
 
+        <main>
         {/* Header */}
         <header className="mb-8">
           <div className="bg-secondary text-white border-3 border-black shadow-brutal-xl p-4 sm:p-6">
@@ -228,11 +229,12 @@ function PalettesPageContent() {
                 </div>
 
                 {/* Filter Buttons */}
-                <div className="hidden md:flex md:flex-wrap md:gap-2">
+                <div className="hidden md:flex md:flex-wrap md:gap-2" role="group" aria-label="Filter palettes">
                   <BrutalButton
                     variant={filterMode === 'all' ? 'primary' : 'outline'}
                     onClick={() => setFilterMode('all')}
                     className="w-full justify-center text-sm sm:w-auto"
+                    aria-pressed={filterMode === 'all'}
                   >
                     All ({palettes.length})
                   </BrutalButton>
@@ -240,6 +242,7 @@ function PalettesPageContent() {
                     variant={filterMode === 'favorites' ? 'secondary' : 'outline'}
                     onClick={() => setFilterMode('favorites')}
                     className="w-full justify-center text-sm sm:w-auto"
+                    aria-pressed={filterMode === 'favorites'}
                   >
                     <HugeiconsIcon icon={Heart} className={`h-4 w-4 mr-2 ${filterMode === 'favorites' ? 'fill-current' : ''}`} aria-hidden="true" />
                     Favorites ({favoriteCount})
@@ -251,11 +254,12 @@ function PalettesPageContent() {
         </div>
 
         <div className="sticky bottom-2 z-30 mt-4 border-3 border-black bg-background/95 p-2 shadow-brutal-sm backdrop-blur-sm md:hidden">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2" role="group" aria-label="Filter palettes">
             <BrutalButton
               variant={filterMode === 'all' ? 'primary' : 'outline'}
               onClick={() => setFilterMode('all')}
               className="w-full justify-center text-sm"
+              aria-pressed={filterMode === 'all'}
             >
               All ({palettes.length})
             </BrutalButton>
@@ -263,6 +267,7 @@ function PalettesPageContent() {
               variant={filterMode === 'favorites' ? 'secondary' : 'outline'}
               onClick={() => setFilterMode('favorites')}
               className="w-full justify-center text-sm"
+              aria-pressed={filterMode === 'favorites'}
             >
               <HugeiconsIcon icon={Heart} className={`h-4 w-4 mr-2 ${filterMode === 'favorites' ? 'fill-current' : ''}`} aria-hidden="true" />
               Favorites ({favoriteCount})
@@ -271,9 +276,10 @@ function PalettesPageContent() {
         </div>
 
         {/* Palettes Grid */}
+        <section aria-label="Saved palettes">
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+          <div className="text-center py-12" role="status" aria-live="polite">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" aria-hidden="true"></div>
             <p className="mt-4 text-lg font-bold">Loading palettes…</p>
           </div>
         ) : filteredPalettes.length > 0 ? (
@@ -289,7 +295,7 @@ function PalettesPageContent() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-12" role="status">
             <BrutalCard>
               <BrutalCardContent className="py-12">
                 <HugeiconsIcon icon={Sparkles} className="h-16 w-16 mx-auto mb-4 opacity-30" aria-hidden="true" />
@@ -315,6 +321,7 @@ function PalettesPageContent() {
             </BrutalCard>
           </div>
         )}
+        </section>
       </div>
 
       {deleteTarget ? (
@@ -360,6 +367,8 @@ function PalettesPageContent() {
           </BrutalCard>
         </div>
       ) : null}
+      </main>
+      </div>
     </div>
   )
 }

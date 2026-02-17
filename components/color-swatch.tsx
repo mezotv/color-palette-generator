@@ -17,10 +17,17 @@ export function ColorSwatch({ color, size = 'md', showInfo = true, className }: 
   const [copied, setCopied] = useState(false)
   const textColor = getBestTextColor(color)
 
-  const handleCopy = async () => {
+  const handleCopy = async (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.preventDefault()
     await navigator.clipboard.writeText(color)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      handleCopy(e)
+    }
   }
 
   const sizeClasses = {
@@ -32,9 +39,10 @@ export function ColorSwatch({ color, size = 'md', showInfo = true, className }: 
   return (
     <button
       onClick={handleCopy}
-      aria-label={`Copy color ${color.toUpperCase()}`}
+      onKeyDown={handleKeyDown}
+      aria-label={copied ? `Copied ${color.toUpperCase()}` : `Copy color ${color.toUpperCase()}`}
       className={cn(
-        'relative group border-3 border-black shadow-brutal overflow-hidden transition-[transform,box-shadow,opacity] hover:shadow-brutal-sm hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer w-full',
+        'relative group border-3 border-black shadow-brutal overflow-hidden transition-[transform,box-shadow,opacity] hover:shadow-brutal-sm hover:translate-x-0.5 hover:translate-y-0.5 focus-visible:shadow-brutal-sm focus-visible:translate-x-0.5 focus-visible:translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black cursor-pointer w-full',
         sizeClasses[size],
         className
       )}

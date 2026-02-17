@@ -31,6 +31,7 @@ function HomeContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAuthReady, setIsAuthReady] = useState(false)
+  const [announcement, setAnnouncement] = useState('')
 
   const harmonyOptions: { value: HarmonyType; label: string; description: string }[] = [
     { value: 'complementary', label: 'Complementary', description: 'Two opposite colors' },
@@ -44,12 +45,14 @@ function HomeContent() {
   const handleGenerate = () => {
     const colors = generateColorHarmony(baseColor, harmonyType)
     setGeneratedColors(colors)
+    setAnnouncement(`Generated ${colors.length} colors using ${harmonyType} harmony`)
   }
 
   const handleRandomGenerate = () => {
     const colors = generateRandomPalette(harmonyType)
     setGeneratedColors(colors)
     setBaseColor(colors[0])
+    setAnnouncement(`Generated random ${harmonyType} palette with ${colors.length} colors`)
   }
 
   const handleSavePalette = async () => {
@@ -99,6 +102,7 @@ function HomeContent() {
         const colors = generateRandomPalette(harmonyType)
         setGeneratedColors(colors)
         setBaseColor(colors[0])
+        setAnnouncement(`Generated random ${harmonyType} palette with ${colors.length} colors`)
       }
     }
 
@@ -129,9 +133,13 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </div>
       <div className="max-w-7xl mx-auto">
         <Navigation />
         
+        <main>
         {/* Header */}
         <header className="mb-8">
           <div className="bg-primary text-primary-foreground border-3 border-black shadow-brutal-xl p-4 sm:p-6">
@@ -178,13 +186,15 @@ function HomeContent() {
                 </div>
 
                 {/* Harmony Type Selector */}
-                <div>
-                  <label className="block text-sm font-bold mb-2">Harmony Type</label>
-                  <div className="space-y-2">
+                <fieldset>
+                  <legend className="block text-sm font-bold mb-2">Harmony Type</legend>
+                  <div className="space-y-2" role="radiogroup" aria-label="Color harmony type">
                     {harmonyOptions.map((option) => (
                       <button
                         key={option.value}
                         type="button"
+                        role="radio"
+                        aria-checked={harmonyType === option.value}
                         onClick={() => setHarmonyType(option.value)}
                         className={`w-full text-left p-3 border-3 border-black font-bold transition-[transform,box-shadow,background-color,color] ${
                           harmonyType === option.value
@@ -197,7 +207,7 @@ function HomeContent() {
                       </button>
                     ))}
                   </div>
-                </div>
+                </fieldset>
 
                 {/* Generate Buttons */}
                 <div className="space-y-2 pt-2">
@@ -287,6 +297,14 @@ function HomeContent() {
               </BrutalCardContent>
             </BrutalCard>
 
+            {/* Keyboard Shortcut Info */}
+            <div className="mt-6 bg-secondary text-white border-3 border-black shadow-brutal p-4">
+              <h3 className="font-bold text-lg mb-2">Keyboard Shortcut</h3>
+              <p className="text-sm font-medium">
+                Press <kbd className="rounded border-2 border-white bg-white/20 px-2 py-1 font-mono text-xs font-bold">Space</kbd> to generate a random palette instantly.
+              </p>
+            </div>
+
             {/* Color Theory Info */}
             <div className="mt-6 bg-accent text-accent-foreground border-3 border-black shadow-brutal p-4">
               <h3 className="font-bold text-lg mb-2 text-balance">Color Theory Tip</h3>
@@ -301,6 +319,7 @@ function HomeContent() {
             </div>
           </div>
         </div>
+        </main>
       </div>
     </div>
   )
