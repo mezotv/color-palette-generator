@@ -322,7 +322,6 @@ function PalettesPageContent() {
           </div>
         )}
         </section>
-      </div>
 
       {deleteTarget ? (
         <div
@@ -368,7 +367,7 @@ function PalettesPageContent() {
         </div>
       ) : null}
       </main>
-      </div>
+    </div>
     </div>
   )
 }
