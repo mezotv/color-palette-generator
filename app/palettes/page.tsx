@@ -1,14 +1,17 @@
 'use client'
 
-import { Suspense, useEffect, useMemo, useState } from 'react'
-import { useQueryState, parseAsString, parseAsStringEnum } from 'nuqs'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import Link from 'next/link'
+import { authClient } from '@/lib/auth/client'
+import { PaletteDisplay } from '@/components/palette-display'
+import { PaletteSkeleton } from '@/components/palette-skeleton'
+import { Navigation } from '@/components/navigation'
 import { BrutalButton } from '@/components/ui/brutal-button'
 import { BrutalInput } from '@/components/ui/brutal-input'
-import { BrutalCard, BrutalCardContent, BrutalCardHeader, BrutalCardTitle } from '@/components/ui/brutal-card'
-import { PaletteDisplay } from '@/components/palette-display'
+import { BrutalCard, BrutalCardContent } from '@/components/ui/brutal-card'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Search, Heart, Sparkles, Delete02Icon, Cancel01Icon } from '@hugeicons/core-free-icons'
-import Link from 'next/link'
+import { Sparkles, Heart, Delete02Icon } from '@hugeicons/core-free-icons'
+import { toast } from 'sonner'
 import type { Palette } from '@/lib/types/color'
 import { Navigation } from '@/components/navigation'
 import { toast } from 'sonner'
@@ -270,9 +273,11 @@ function PalettesPageContent() {
 
         <section aria-label="Saved palettes">
         {isLoading ? (
-          <div className="text-center py-12" role="status" aria-live="polite">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" aria-hidden="true"></div>
-            <p className="mt-4 text-lg font-bold">Loading palettes…</p>
+          <div className="grid gap-6" role="status" aria-live="polite">
+            <span className="sr-only">Loading palettes…</span>
+            {[...Array(3)].map((_, i) => (
+              <PaletteSkeleton key={i} />
+            ))}
           </div>
         ) : filteredPalettes.length > 0 ? (
           <div className="grid gap-6">

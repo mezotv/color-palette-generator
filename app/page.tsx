@@ -10,7 +10,7 @@ import { ColorSwatch } from '@/components/color-swatch'
 import { Navigation } from '@/components/navigation'
 import { generateColorHarmony, generateRandomPalette } from '@/lib/utils/color-harmony'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Palette, Refresh, Sparkles } from '@hugeicons/core-free-icons'
+import { Palette, Refresh, Sparkles, Copy01, Link03, InformationCircle } from '@hugeicons/core-free-icons'
 import type { HarmonyType } from '@/lib/types/color'
 import { authClient } from '@/lib/auth/client'
 import { toast } from 'sonner'
@@ -257,7 +257,36 @@ function HomeContent() {
           <div className="lg:col-span-2">
             <BrutalCard>
               <BrutalCardHeader>
-                <BrutalCardTitle>Generated Palette</BrutalCardTitle>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <BrutalCardTitle>Generated Palette</BrutalCardTitle>
+                  {generatedColors.length > 0 && (
+                    <div className="flex gap-2">
+                      <BrutalButton
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const link = window.location.href
+                          navigator.clipboard.writeText(link)
+                          toast.success('Link copied to clipboard!')
+                        }}
+                      >
+                        <HugeiconsIcon icon={Link03} className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                        <span className="hidden sm:inline">Share</span>
+                      </BrutalButton>
+                      <BrutalButton
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedColors.join(', '))
+                          toast.success('All colors copied!')
+                        }}
+                      >
+                        <HugeiconsIcon icon={Copy01} className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                        <span className="hidden sm:inline">Copy All</span>
+                      </BrutalButton>
+                    </div>
+                  )}
+                </div>
               </BrutalCardHeader>
               <BrutalCardContent>
                 {generatedColors.length > 0 ? (
@@ -316,12 +345,22 @@ function HomeContent() {
               </BrutalCardContent>
             </BrutalCard>
 
-            {/* Keyboard Shortcut Info */}
+            {/* Keyboard Shortcuts Info */}
             <div className="mt-6 bg-secondary text-white border-3 border-black shadow-brutal p-4">
-              <h3 className="font-bold text-lg mb-2">Keyboard Shortcut</h3>
-              <p className="text-sm font-medium">
-                Press <kbd className="rounded border-2 border-white bg-white/20 px-2 py-1 font-mono text-xs font-bold">Space</kbd> to generate a random palette instantly.
-              </p>
+              <div className="flex items-center gap-2 mb-3">
+                <HugeiconsIcon icon={InformationCircle} className="h-5 w-5" aria-hidden="true" />
+                <h3 className="font-bold text-lg">Keyboard Shortcuts</h3>
+              </div>
+              <div className="space-y-2 text-sm font-medium">
+                <div className="flex items-center justify-between">
+                  <span>Generate random palette</span>
+                  <kbd className="rounded border-2 border-white bg-white/20 px-2 py-1 font-mono text-xs font-bold">Space</kbd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Copy color from swatch</span>
+                  <kbd className="rounded border-2 border-white bg-white/20 px-2 py-1 font-mono text-xs font-bold">Click</kbd>
+                </div>
+              </div>
             </div>
 
             {/* Color Theory Info */}
