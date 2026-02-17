@@ -45,21 +45,11 @@ export const metadata: Metadata = {
     siteName: 'Color Palette Generator',
     locale: 'en_US',
     type: 'website',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Color Palette Generator Preview',
-      },
-    ],
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: 'Color Palette Generator - Create Beautiful Color Schemes',
     description: 'Generate beautiful, accessible color palettes with color theory. Create complementary, analogous, triadic, and more color harmonies.',
-    images: ['/og-image.png'],
-    creator: '@yourusername',
   },
   robots: {
     index: true,
