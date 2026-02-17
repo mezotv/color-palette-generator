@@ -10,7 +10,7 @@ import { ColorSwatch } from '@/components/color-swatch'
 import { Navigation } from '@/components/navigation'
 import { generateColorHarmony, generateRandomPalette } from '@/lib/utils/color-harmony'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Palette, Refresh, Sparkles, Copy01, Link03, InformationCircle } from '@hugeicons/core-free-icons'
+import { Palette, Refresh, Sparkles, Copy, Link, InformationCircleIcon } from '@hugeicons/core-free-icons'
 import type { HarmonyType } from '@/lib/types/color'
 import { authClient } from '@/lib/auth/client'
 import { toast } from 'sonner'
@@ -270,7 +270,7 @@ function HomeContent() {
                           toast.success('Link copied to clipboard!')
                         }}
                       >
-                        <HugeiconsIcon icon={Link03} className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                        <HugeiconsIcon icon={Link} className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                         <span className="hidden sm:inline">Share</span>
                       </BrutalButton>
                       <BrutalButton
@@ -281,7 +281,7 @@ function HomeContent() {
                           toast.success('All colors copied!')
                         }}
                       >
-                        <HugeiconsIcon icon={Copy01} className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                        <HugeiconsIcon icon={Copy} className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                         <span className="hidden sm:inline">Copy All</span>
                       </BrutalButton>
                     </div>
@@ -348,7 +348,7 @@ function HomeContent() {
             {/* Keyboard Shortcuts Info */}
             <div className="mt-6 bg-secondary text-white border-3 border-black shadow-brutal p-4">
               <div className="flex items-center gap-2 mb-3">
-                <HugeiconsIcon icon={InformationCircle} className="h-5 w-5" aria-hidden="true" />
+                <HugeiconsIcon icon={InformationCircleIcon} className="h-5 w-5" aria-hidden="true" />
                 <h3 className="font-bold text-lg">Keyboard Shortcuts</h3>
               </div>
               <div className="space-y-2 text-sm font-medium">
